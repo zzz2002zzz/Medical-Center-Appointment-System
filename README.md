@@ -15,9 +15,9 @@ A microservices-based hospital appointment booking system built with Spring Boot
 
 | Member | Service |
 |---|---|
-| zzz2002zzz | Patient Service + API Gateway |
-| Rashmi Shehara Sewmini | Doctor Service |
-| Ravindya Shaw | Appointment Service |
+| Chamudi Thamasha | Patient Service + API Gateway |
+| Ravindya Shaw | Doctor Service |
+| Rashmi Shehara Sewmini | Appointment Service |
 
 ## Prerequisites
 
