@@ -1,0 +1,14 @@
+server:
+  port: 8081
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/patientdb
+
+api:
+  key: demo-key-123
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
