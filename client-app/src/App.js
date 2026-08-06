@@ -81,7 +81,7 @@ function App() {
               <li key={doc.id} style={{ marginBottom: "10px", listStyle: "none", border: "1px solid #ccc", padding: "10px", borderRadius: "6px" }}>
                 <strong>{doc.name}</strong><br />
                 Specialization: {doc.specialization}<br />
-                Availability: {doc.availability}<br />
+                Availability: {doc.availabilitySlots ? doc.availabilitySlots.join(", ") : "N/A"}<br />
                 <small>ID: {doc.id}</small>
               </li>
             ))}
