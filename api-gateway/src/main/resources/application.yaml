@@ -1,0 +1,9 @@
+server:
+  port: 8080
+
+jwt:
+  secret: mySuperSecretKeyForMedicalCenterAppointmentSystem2026
+  expirationMs: 3600000
+
+api:
+  key: demo-key-123
