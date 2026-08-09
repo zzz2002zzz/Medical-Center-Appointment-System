@@ -2,9 +2,8 @@ server:
   port: 8082
 
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/doctordb
+  mongodb:
+    uri: mongodb://mongo:27017/doctordb
 
 api:
   key: demo-key-123
@@ -12,4 +11,3 @@ api:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-    

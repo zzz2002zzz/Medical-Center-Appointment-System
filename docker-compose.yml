@@ -1,0 +1,16 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+
+  doctor-service:
+    build: ./doctor-service
+    container_name: doctor-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_MONGODB_URI: mongodb://mongo:27017/doctordb
+    depends_on:
+      - mongo
