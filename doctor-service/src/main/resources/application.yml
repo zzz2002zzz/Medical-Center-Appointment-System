@@ -4,7 +4,7 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/doctordb
+      uri: mongodb://mongo:27017/doctordb
 
 api:
   key: demo-key-123
