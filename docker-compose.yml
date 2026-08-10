@@ -1,16 +1,71 @@
+version: '3.8'
 services:
   mongo:
     image: mongo:latest
     container_name: mongo
     ports:
       - "27017:27017"
-
+    networks:
+      - medical-network
+  patient-service:
+    build: ./patient-service
+    container_name: patient-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/patientdb
+    depends_on:
+      - mongo
+    networks:
+      - medical-network
   doctor-service:
     build: ./doctor-service
     container_name: doctor-service
     ports:
       - "8082:8082"
     environment:
-      SPRING_MONGODB_URI: mongodb://mongo:27017/doctordb
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/doctordb
     depends_on:
       - mongo
+    networks:
+      - medical-network
+  appointment-service:
+    build: ./appointment-service
+    container_name: appointment-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_MONGODB_URI=mongodb://mongo:27017/appointmentdb
+    depends_on:
+      - mongo
+      - patient-service
+      - doctor-service
+    networks:
+      - medical-network
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVICES_PATIENT_URL=http://patient-service:8081
+      - SERVICES_DOCTOR_URL=http://doctor-service:8082
+      - SERVICES_APPOINTMENT_URL=http://appointment-service:8083
+    depends_on:
+      - patient-service
+      - doctor-service
+      - appointment-service
+    networks:
+      - medical-network
+  client-app:
+    build: ./client-app
+    container_name: client-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - medical-network
+networks:
+  medical-network:
+    driver: bridge

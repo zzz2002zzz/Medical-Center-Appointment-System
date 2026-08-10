@@ -1,30 +1,31 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState } from "react";
 import axios from "axios";
+import "./App.css";
 
 const API_KEY = "demo-key-123";
+
+function initials(name) {
+  if (!name) return "?";
+  return name.replace(/^Dr\.?\s*/i, "").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
 
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
+  const [tab, setTab] = useState("doctors");
+
   const [doctors, setDoctors] = useState([]);
   const [doctorsError, setDoctorsError] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
-        username,
-        password,
-      });
-      setToken(response.data.token);
-      fetchDoctors();
-    } catch (err) {
-      setError("Login failed. Please check your credentials.");
-    }
-  };
+  const [patientForm, setPatientForm] = useState({ name: "", dob: "", contact: "", medicalHistorySummary: "" });
+  const [patientResult, setPatientResult] = useState(null);
+  const [patientError, setPatientError] = useState("");
+
+  const [appointmentForm, setAppointmentForm] = useState({ patientId: "", doctorId: "", dateTime: "" });
+  const [appointmentResult, setAppointmentResult] = useState(null);
+  const [appointmentError, setAppointmentError] = useState("");
 
   const fetchDoctors = async () => {
     setDoctorsError("");
@@ -34,60 +35,201 @@ function App() {
       });
       setDoctors(response.data);
     } catch (err) {
-      setDoctorsError("Failed to load doctors.");
+      setDoctorsError("Couldn't load the doctor list. Try refreshing.");
     }
   };
 
-  return (
-    <div style={{ padding: "40px", fontFamily: "Arial, sans-serif", maxWidth: "600px", margin: "0 auto" }}>
-      <h1>Medical Center Login</h1>
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const response = await axios.post("http://localhost:8080/auth/login", { username, password });
+      setToken(response.data.token);
+      fetchDoctors();
+    } catch (err) {
+      setError("Login failed. Check the username and password and try again.");
+    }
+  };
 
-      {!token && (
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: "15px" }}>
-            <label>Username</label><br />
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-          <div style={{ marginBottom: "15px" }}>
-            <label>Password</label><br />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-          <button type="submit" style={{ padding: "10px 20px" }}>Login</button>
-        </form>
-      )}
+  const handleSignOut = () => {
+    setToken("");
+    setUsername("");
+    setPassword("");
+    setTab("doctors");
+  };
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+  const handleRegisterPatient = async (e) => {
+    e.preventDefault();
+    setPatientError("");
+    setPatientResult(null);
+    try {
+      const response = await axios.post("http://localhost:8080/patients/register", patientForm, {
+        headers: { "X-API-KEY": API_KEY },
+      });
+      setPatientResult(response.data);
+      setAppointmentForm((prev) => ({ ...prev, patientId: response.data.id }));
+    } catch (err) {
+      setPatientError("Couldn't register this patient. Check the fields and try again.");
+    }
+  };
 
-      {token && (
-        <div style={{ marginTop: "20px" }}>
-          <p style={{ color: "green" }}><strong>Logged in successfully!</strong></p>
+  const handleBookAppointment = async (e) => {
+    e.preventDefault();
+    setAppointmentError("");
+    setAppointmentResult(null);
+    try {
+      const response = await axios.post("http://localhost:8080/appointments/book", appointmentForm, {
+        headers: { "X-API-KEY": API_KEY },
+      });
+      setAppointmentResult(response.data);
+    } catch (err) {
+      setAppointmentError("Couldn't book this appointment. Check the patient, doctor, and time.");
+    }
+  };
 
-          <h2>Available Doctors</h2>
-          {doctorsError && <p style={{ color: "red" }}>{doctorsError}</p>}
-          {doctors.length === 0 && !doctorsError && <p>Loading doctors...</p>}
+  const goBookWithDoctor = (doctorId) => {
+    setAppointmentForm((prev) => ({ ...prev, doctorId }));
+    setTab("book");
+  };
 
-          <ul>
-            {doctors.map((doc) => (
-              <li key={doc.id} style={{ marginBottom: "10px", listStyle: "none", border: "1px solid #ccc", padding: "10px", borderRadius: "6px" }}>
-                <strong>{doc.name}</strong><br />
-                Specialization: {doc.specialization}<br />
-                Availability: {doc.availabilitySlots ? doc.availabilitySlots.join(", ") : "N/A"}<br />
-                <small>ID: {doc.id}</small>
-              </li>
-            ))}
-          </ul>
+  if (!token) {
+    return (
+      <div className="auth-screen">
+        <div className="auth-card">
+          <div className="brand">Medical Center</div>
+          <p className="tagline">Front desk — sign in to continue</p>
+          <form onSubmit={handleLogin}>
+            <div className="field">
+              <label>Username</label>
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ width: "100%" }}>Sign in</button>
+          </form>
+          {error && <p className="error-text">{error}</p>}
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="topbar">
+        <div className="brand">Medical Center</div>
+        <div className="right">
+          <span>{username || "Front desk"}</span>
+          <button className="signout" onClick={handleSignOut}>Sign out</button>
+        </div>
+      </div>
+
+      <div className="tabbar">
+        <button className={`tab ${tab === "doctors" ? "active" : ""}`} onClick={() => setTab("doctors")}>Doctors</button>
+        <button className={`tab ${tab === "register" ? "active" : ""}`} onClick={() => setTab("register")}>Register patient</button>
+        <button className={`tab ${tab === "book" ? "active" : ""}`} onClick={() => setTab("book")}>Book appointment</button>
+      </div>
+
+      <div className="content">
+        {tab === "doctors" && (
+          <>
+            <h2>Available doctors</h2>
+            <p className="section-sub">Browse doctors on file and book directly from a card.</p>
+            {doctorsError && <p className="error-text">{doctorsError}</p>}
+            {doctors.length === 0 && !doctorsError && <p className="empty-note">No doctors on file yet.</p>}
+            <div className="card-grid">
+              {doctors.map((doc) => (
+                <div className="doctor-card" key={doc.id}>
+                  <div className="avatar">{initials(doc.name)}</div>
+                  <h3>{doc.name}</h3>
+                  <span className="badge">{doc.specialization}</span>
+                  <div className="slots">
+                    {doc.availabilitySlots && doc.availabilitySlots.length > 0
+                      ? doc.availabilitySlots.join(" · ")
+                      : "No slots listed"}
+                  </div>
+                  <div className="record-id">{doc.id}</div>
+                  <button className="book-btn" onClick={() => goBookWithDoctor(doc.id)}>Book with this doctor</button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {tab === "register" && (
+          <>
+            <h2>Register patient</h2>
+            <p className="section-sub">Add a new patient record to the system.</p>
+            <div className="panel">
+              <form onSubmit={handleRegisterPatient}>
+                <div className="form-row">
+                  <div className="field">
+                    <label>Name</label>
+                    <input type="text" value={patientForm.name} onChange={(e) => setPatientForm({ ...patientForm, name: e.target.value })} />
+                  </div>
+                  <div className="field">
+                    <label>Date of birth</label>
+                    <input type="date" value={patientForm.dob} onChange={(e) => setPatientForm({ ...patientForm, dob: e.target.value })} />
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Contact</label>
+                  <input type="text" value={patientForm.contact} onChange={(e) => setPatientForm({ ...patientForm, contact: e.target.value })} />
+                </div>
+                <div className="field">
+                  <label>Medical history summary</label>
+                  <input type="text" value={patientForm.medicalHistorySummary} onChange={(e) => setPatientForm({ ...patientForm, medicalHistorySummary: e.target.value })} />
+                </div>
+                <button type="submit" className="btn btn-primary">Register patient</button>
+              </form>
+              {patientError && <p className="error-text">{patientError}</p>}
+              {patientResult && (
+                <div className="success-banner">
+                  Registered {patientResult.name} — record {patientResult.id}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {tab === "book" && (
+          <>
+            <h2>Book appointment</h2>
+            <p className="section-sub">Link a patient to a doctor at a specific time.</p>
+            <div className="panel">
+              <form onSubmit={handleBookAppointment}>
+                <div className="field">
+                  <label>Patient ID</label>
+                  <input type="text" value={appointmentForm.patientId} onChange={(e) => setAppointmentForm({ ...appointmentForm, patientId: e.target.value })} />
+                </div>
+                <div className="form-row">
+                  <div className="field">
+                    <label>Doctor</label>
+                    <select value={appointmentForm.doctorId} onChange={(e) => setAppointmentForm({ ...appointmentForm, doctorId: e.target.value })}>
+                      <option value="">Select a doctor</option>
+                      {doctors.map((doc) => (
+                        <option key={doc.id} value={doc.id}>{doc.name} — {doc.specialization}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label>Date &amp; time</label>
+                    <input type="datetime-local" value={appointmentForm.dateTime} onChange={(e) => setAppointmentForm({ ...appointmentForm, dateTime: e.target.value })} />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-accent">Book appointment</button>
+              </form>
+              {appointmentError && <p className="error-text">{appointmentError}</p>}
+              {appointmentResult && (
+                <div className="success-banner">
+                  Booked — appointment {appointmentResult.id}, status {appointmentResult.status}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

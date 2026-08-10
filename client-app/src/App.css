@@ -1,38 +1,285 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #f5f7f3;
+  --surface: #ffffff;
+  --ink: #1e2a25;
+  --muted: #5c6b63;
+  --line: #d3ded6;
+  --teal: #1f4b43;
+  --teal-soft: #e4ede8;
+  --amber: #c98a2c;
+  --amber-soft: #f7ecd9;
+  --error: #b3432b;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+/* ---------- Sign-in screen ---------- */
+.auth-screen {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 24px;
 }
 
-.App-link {
-  color: #61dafb;
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 36px 32px;
+  box-shadow: 0 1px 3px rgba(30, 42, 37, 0.06);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.auth-card .brand {
+  font-family: 'Newsreader', serif;
+  font-weight: 600;
+  font-size: 1.6rem;
+  margin: 0 0 4px;
+}
+
+.auth-card .tagline {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0 0 28px;
+}
+
+/* ---------- App shell (post-login) ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--teal);
+  color: #fff;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar .brand {
+  font-family: 'Newsreader', serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.topbar .right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.85rem;
+}
+
+.topbar .signout {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.topbar .signout:hover { background: rgba(255,255,255,0.2); }
+
+.tabbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 0 28px;
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  padding: 14px 18px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--muted);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: var(--teal);
+  border-bottom: 2px solid var(--amber);
+}
+
+.content {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px 96px;
+}
+
+.content h2 {
+  font-family: 'Newsreader', serif;
+  font-weight: 500;
+  font-size: 1.4rem;
+  margin: 0 0 6px;
+}
+
+.content .section-sub {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 20px;
+}
+
+/* ---------- Doctor cards ---------- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.doctor-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--teal-soft);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Newsreader', serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.doctor-card h3 {
+  font-family: 'Newsreader', serif;
+  font-weight: 500;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.badge {
+  display: inline-block;
+  width: fit-content;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+}
+
+.doctor-card .slots {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.doctor-card .record-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.doctor-card .book-btn {
+  margin-top: 4px;
+  align-self: flex-start;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ---------- Forms ---------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid var(--amber);
+  outline-offset: 1px;
+  border-color: var(--amber);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.btn {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 11px 22px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-accent { background: var(--amber); color: #fff; }
+
+.error-text { color: var(--error); font-size: 0.85rem; margin-top: 10px; }
+
+.success-banner {
+  background: var(--teal-soft);
+  color: var(--teal);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  margin-top: 14px;
+}
+
+.empty-note { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .topbar { padding: 12px 16px; }
+  .content { padding: 24px 16px 72px; }
 }

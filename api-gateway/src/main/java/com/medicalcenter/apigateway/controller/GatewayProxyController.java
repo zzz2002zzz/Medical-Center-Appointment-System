@@ -1,6 +1,7 @@
 package com.medicalcenter.apigateway.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,19 +16,28 @@ public class GatewayProxyController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    @Value("${services.patient.url:http://localhost:8081}")
+    private String patientServiceUrl;
+
+    @Value("${services.doctor.url:http://localhost:8082}")
+    private String doctorServiceUrl;
+
+    @Value("${services.appointment.url:http://localhost:8083}")
+    private String appointmentServiceUrl;
+
     @RequestMapping("/patients/**")
     public ResponseEntity<byte[]> proxyPatients(HttpServletRequest request, @RequestBody(required = false) byte[] body) {
-        return proxy(request, body, "http://localhost:8081");
+        return proxy(request, body, patientServiceUrl);
     }
 
     @RequestMapping("/doctors/**")
     public ResponseEntity<byte[]> proxyDoctors(HttpServletRequest request, @RequestBody(required = false) byte[] body) {
-        return proxy(request, body, "http://localhost:8082");
+        return proxy(request, body, doctorServiceUrl);
     }
 
     @RequestMapping("/appointments/**")
     public ResponseEntity<byte[]> proxyAppointments(HttpServletRequest request, @RequestBody(required = false) byte[] body) {
-        return proxy(request, body, "http://localhost:8083");
+        return proxy(request, body, appointmentServiceUrl);
     }
 
     private ResponseEntity<byte[]> proxy(HttpServletRequest request, byte[] body, String targetBase) {
