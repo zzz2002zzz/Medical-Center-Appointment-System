@@ -2,8 +2,8 @@ server:
   port: 8083
 
 spring:
-    mongodb:
-      uri: mongodb://localhost:27017/appointmentdb
+  mongodb:
+    uri: mongodb://mongo:27017/appointmentdb
 
 api:
   key: demo-key-123
