@@ -18,6 +18,7 @@ function App() {
 
   const [doctors, setDoctors] = useState([]);
   const [doctorsError, setDoctorsError] = useState("");
+  const [specializationQuery, setSpecializationQuery] = useState("");
 
   const [patientForm, setPatientForm] = useState({ name: "", dob: "", contact: "", medicalHistorySummary: "" });
   const [patientResult, setPatientResult] = useState(null);
@@ -36,6 +37,24 @@ function App() {
       setDoctors(response.data);
     } catch (err) {
       setDoctorsError("Couldn't load the doctor list. Try refreshing.");
+    }
+  };
+
+  const searchDoctors = async (e) => {
+    e.preventDefault();
+    setDoctorsError("");
+    if (!specializationQuery.trim()) {
+      fetchDoctors();
+      return;
+    }
+    try {
+      const response = await axios.get("http://localhost:8080/doctors/search", {
+        headers: { "X-API-KEY": API_KEY },
+        params: { specialization: specializationQuery },
+      });
+      setDoctors(response.data);
+    } catch (err) {
+      setDoctorsError("Search failed. Try again.");
     }
   };
 
@@ -83,7 +102,8 @@ function App() {
       });
       setAppointmentResult(response.data);
     } catch (err) {
-      setAppointmentError("Couldn't book this appointment. Check the patient, doctor, and time.");
+      const msg = err.response?.data;
+      setAppointmentError(typeof msg === "string" && msg ? msg : "Couldn't book this appointment. Check the patient, doctor, and time.");
     }
   };
 
@@ -136,8 +156,19 @@ function App() {
           <>
             <h2>Available doctors</h2>
             <p className="section-sub">Browse doctors on file and book directly from a card.</p>
+            <form onSubmit={searchDoctors} style={{ display: "flex", gap: "8px", marginBottom: "18px" }}>
+              <input
+                type="text"
+                placeholder="Search by specialization (e.g. Cardiology)"
+                value={specializationQuery}
+                onChange={(e) => setSpecializationQuery(e.target.value)}
+                style={{ flex: 1, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: "6px", fontFamily: "'IBM Plex Sans', sans-serif" }}
+              />
+              <button type="submit" className="btn btn-primary">Search</button>
+              <button type="button" className="btn" style={{ background: "var(--line)", color: "var(--ink)" }} onClick={() => { setSpecializationQuery(""); fetchDoctors(); }}>Clear</button>
+            </form>
             {doctorsError && <p className="error-text">{doctorsError}</p>}
-            {doctors.length === 0 && !doctorsError && <p className="empty-note">No doctors on file yet.</p>}
+            {doctors.length === 0 && !doctorsError && <p className="empty-note">No doctors match.</p>}
             <div className="card-grid">
               {doctors.map((doc) => (
                 <div className="doctor-card" key={doc.id}>

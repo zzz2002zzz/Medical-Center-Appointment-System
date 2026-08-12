@@ -4,6 +4,7 @@ import com.medicalcenter.appointmentservice.model.Appointment;
 import com.medicalcenter.appointmentservice.repository.AppointmentRepository;
 import com.medicalcenter.appointmentservice.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,14 @@ public class AppointmentController {
         }
         if (!validationService.doctorExists(appointment.getDoctorId())) {
             return ResponseEntity.badRequest().body("Invalid doctorId");
+        }
+        boolean conflict = appointmentRepository.findAll().stream()
+                .anyMatch(a -> a.getDoctorId().equals(appointment.getDoctorId())
+                        && a.getDateTime().equals(appointment.getDateTime())
+                        && "BOOKED".equals(a.getStatus()));
+        if (conflict) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("This doctor already has a booked appointment at that time");
         }
         appointment.setStatus("BOOKED");
         return ResponseEntity.ok(appointmentRepository.save(appointment));

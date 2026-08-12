@@ -25,6 +25,14 @@ public class DoctorController {
         return ResponseEntity.ok(doctorRepository.findAll());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Doctor>> search(@RequestParam String specialization) {
+        return ResponseEntity.ok(doctorRepository.findAll().stream()
+                .filter(d -> d.getSpecialization() != null
+                        && d.getSpecialization().toLowerCase().contains(specialization.toLowerCase()))
+                .toList());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Doctor> getById(@PathVariable String id) {
         return doctorRepository.findById(id)
