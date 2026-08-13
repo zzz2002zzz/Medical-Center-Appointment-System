@@ -28,11 +28,16 @@ function App() {
   const [appointmentResult, setAppointmentResult] = useState(null);
   const [appointmentError, setAppointmentError] = useState("");
 
-  const fetchDoctors = async () => {
+  const authHeaders = (jwt) => ({
+    "X-API-KEY": API_KEY,
+    Authorization: `Bearer ${jwt}`,
+  });
+
+  const fetchDoctors = async (jwt) => {
     setDoctorsError("");
     try {
       const response = await axios.get("http://localhost:8080/doctors", {
-        headers: { "X-API-KEY": API_KEY },
+        headers: authHeaders(jwt),
       });
       setDoctors(response.data);
     } catch (err) {
@@ -44,12 +49,12 @@ function App() {
     e.preventDefault();
     setDoctorsError("");
     if (!specializationQuery.trim()) {
-      fetchDoctors();
+      fetchDoctors(token);
       return;
     }
     try {
       const response = await axios.get("http://localhost:8080/doctors/search", {
-        headers: { "X-API-KEY": API_KEY },
+        headers: authHeaders(token),
         params: { specialization: specializationQuery },
       });
       setDoctors(response.data);
@@ -63,8 +68,9 @@ function App() {
     setError("");
     try {
       const response = await axios.post("http://localhost:8080/auth/login", { username, password });
-      setToken(response.data.token);
-      fetchDoctors();
+      const jwt = response.data.token;
+      setToken(jwt);
+      fetchDoctors(jwt);
     } catch (err) {
       setError("Login failed. Check the username and password and try again.");
     }
@@ -83,7 +89,7 @@ function App() {
     setPatientResult(null);
     try {
       const response = await axios.post("http://localhost:8080/patients/register", patientForm, {
-        headers: { "X-API-KEY": API_KEY },
+        headers: authHeaders(token),
       });
       setPatientResult(response.data);
       setAppointmentForm((prev) => ({ ...prev, patientId: response.data.id }));
@@ -98,7 +104,7 @@ function App() {
     setAppointmentResult(null);
     try {
       const response = await axios.post("http://localhost:8080/appointments/book", appointmentForm, {
-        headers: { "X-API-KEY": API_KEY },
+        headers: authHeaders(token),
       });
       setAppointmentResult(response.data);
     } catch (err) {
@@ -117,7 +123,7 @@ function App() {
       <div className="auth-screen">
         <div className="auth-card">
           <div className="brand">Medical Center</div>
-          <p className="tagline">Front desk — sign in to continue</p>
+          <p className="tagline">Front desk â€” sign in to continue</p>
           <form onSubmit={handleLogin}>
             <div className="field">
               <label>Username</label>
@@ -165,7 +171,7 @@ function App() {
                 style={{ flex: 1, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: "6px", fontFamily: "'IBM Plex Sans', sans-serif" }}
               />
               <button type="submit" className="btn btn-primary">Search</button>
-              <button type="button" className="btn" style={{ background: "var(--line)", color: "var(--ink)" }} onClick={() => { setSpecializationQuery(""); fetchDoctors(); }}>Clear</button>
+              <button type="button" className="btn" style={{ background: "var(--line)", color: "var(--ink)" }} onClick={() => { setSpecializationQuery(""); fetchDoctors(token); }}>Clear</button>
             </form>
             {doctorsError && <p className="error-text">{doctorsError}</p>}
             {doctors.length === 0 && !doctorsError && <p className="empty-note">No doctors match.</p>}
@@ -177,7 +183,7 @@ function App() {
                   <span className="badge">{doc.specialization}</span>
                   <div className="slots">
                     {doc.availabilitySlots && doc.availabilitySlots.length > 0
-                      ? doc.availabilitySlots.join(" · ")
+                      ? doc.availabilitySlots.join(" Â· ")
                       : "No slots listed"}
                   </div>
                   <div className="record-id">{doc.id}</div>
@@ -217,7 +223,7 @@ function App() {
               {patientError && <p className="error-text">{patientError}</p>}
               {patientResult && (
                 <div className="success-banner">
-                  Registered {patientResult.name} — record {patientResult.id}
+                  Registered {patientResult.name} â€” record {patientResult.id}
                 </div>
               )}
             </div>
@@ -240,7 +246,7 @@ function App() {
                     <select value={appointmentForm.doctorId} onChange={(e) => setAppointmentForm({ ...appointmentForm, doctorId: e.target.value })}>
                       <option value="">Select a doctor</option>
                       {doctors.map((doc) => (
-                        <option key={doc.id} value={doc.id}>{doc.name} — {doc.specialization}</option>
+                        <option key={doc.id} value={doc.id}>{doc.name} â€” {doc.specialization}</option>
                       ))}
                     </select>
                   </div>
@@ -254,7 +260,7 @@ function App() {
               {appointmentError && <p className="error-text">{appointmentError}</p>}
               {appointmentResult && (
                 <div className="success-banner">
-                  Booked — appointment {appointmentResult.id}, status {appointmentResult.status}
+                  Booked â€” appointment {appointmentResult.id}, status {appointmentResult.status}
                 </div>
               )}
             </div>
