@@ -20,6 +20,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     // Paths that don't require a JWT (login itself, and Swagger/docs if proxied)
     private static final List<String> PUBLIC_PATHS = List.of(
             "/auth/login",
+            "/oauth/token",
             "/swagger-ui",
             "/v3/api-docs"
     );

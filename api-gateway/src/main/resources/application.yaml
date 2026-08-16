@@ -7,3 +7,6 @@ jwt:
 
 api:
   key: demo-key-123
+oauth:
+  client-id: medical-center-client
+  client-secret: demo-client-secret-2026
